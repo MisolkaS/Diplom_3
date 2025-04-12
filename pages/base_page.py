@@ -1,24 +1,18 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 
-import time
-from selenium.common.exceptions import TimeoutException
 import random
 
 class BasePage:
     def __init__(self, driver):
         self.driver = driver
-
-
     def f_open_page(self, page_url):
         self.driver.get(page_url)
 
     def f_wait_page(self, page):
         WebDriverWait(self.driver, 20).until(
-            EC.url_to_be({page})
+            EC.url_to_be(page)
         )
 
     def f_get_attribute_type(self, locator):
@@ -29,8 +23,6 @@ class BasePage:
         return input_type
 
     def f_click_eye(self, locator):
-        #eye_icon = self.driver.find_element(*locator)
-        #self.driver.execute_script("arguments[0].click();", eye_icon)
         element = WebDriverWait(self.driver, 20).until(EC.element_to_be_clickable(locator))
         element.click()
 
@@ -56,15 +48,16 @@ class BasePage:
     def f_wait_for_element(self, locator, timeout=20):
         return WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
 
-    def f_click_button_for_close_modal_window(self, locator):
-        close_button = WebDriverWait(self.driver, 10).until(
+    def f_click_button_for_close_modal_window(self, locator, loading_locator):
+        WebDriverWait(self.driver, 30).until(
+            EC.invisibility_of_element_located(loading_locator)
+        )
+        close_button = WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable(locator)
         )
         close_button.click()
 
-
     def f_check_modal_window_close(self, locator):
-
         is_modal_closed = WebDriverWait(self.driver, 20).until(
             EC.invisibility_of_element_located(locator)
         )
@@ -115,26 +108,74 @@ class BasePage:
         updated_counter = self.driver.find_element(*counter_locator).text
         return int(initial_counter), int(updated_counter)
 
+    def f_drag_and_drop_ingredients_to_basket_for_order(self, ingredient_locator, basket_locator):
+        ingredient = WebDriverWait(self.driver, 20).until(
+            EC.presence_of_element_located(ingredient_locator)
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView();", ingredient)
+        basket = WebDriverWait(self.driver, 20).until(
+            EC.presence_of_element_located(basket_locator)
+        )
+        actions = ActionChains(self.driver)
+        actions.click_and_hold(ingredient).move_to_element(basket).release().perform()
 
-    # def f_click_order(self):
-    #     orders = WebDriverWait(self.driver, 10).until(
-    #             EC.presence_of_all_elements_located(self.ORDERS_LIST)
-    #         )
-    #     selected_order = random.choice(orders[:10])
-    #     selected_order_index = orders.index(selected_order) + 1
-    #     self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
-    #                               selected_order)
-    #     order_title = selected_order.find_element(*self.ORDER_TITLE).text
-    #     order_link = selected_order.find_element(*self.ORDER_LINK)
-    #     self.driver.execute_script("arguments[0].click();", order_link)
-    #     return selected_order_index, order_title
-    #
-    # def f_check_open_details(self, selected_order):
-    #     locator = (By.XPATH, f"(//h2[contains(@class, 'text text_type_main-medium mb-2')])[{selected_order}]")
-    #     element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(locator))
-    #     h2_text = element.text
-    #     print(f"Текст в h2 (элемент {selected_order}): {h2_text}")
-    #     return h2_text
+    def f_count_user_orders(self, locator):
+        order_elements = WebDriverWait(self.driver, 20).until(EC.presence_of_all_elements_located(locator))
+        order_numbers = [element.text for element in order_elements]
+        return order_numbers
 
+    def f_get_total_orders_count(self, locator):
+        counter_element = WebDriverWait(self.driver, 30).until(
+                EC.visibility_of_element_located(locator)
+            )
+        return int(counter_element.text)
 
+    def f_get_order_number(self, locator, loading_locator):
+        WebDriverWait(self.driver, 30).until(
+            EC.invisibility_of_element_located(loading_locator)
+        )
+        counter_element = WebDriverWait(self.driver, 30).until(
+                EC.visibility_of_element_located(locator)
+            )
+        return counter_element.text
 
+    def f_get_recent_orders(self, order_items_locator, order_number_locator):
+        order_elements = WebDriverWait(self.driver, 30).until(
+            EC.presence_of_all_elements_located(order_items_locator)
+        )
+        order_numbers = []
+        for item in order_elements:
+            order_number = WebDriverWait(item, 30).until(
+                EC.presence_of_element_located(order_number_locator)
+            ).text
+            order_numbers.append(order_number)
+        return order_numbers
+
+    def f_check_is_order_in_progress(self, locator):
+        WebDriverWait(self.driver, 30).until(
+                EC.presence_of_all_elements_located(locator)
+            )
+
+        order_number_elements = self.driver.find_elements(*locator)
+        order_numbers = [element.text for element in order_number_elements]
+
+        return order_numbers
+
+    def f_click_order(self, locator_orders_list, locator_order_title, locator_order_link):
+        orders = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_all_elements_located(locator_orders_list)
+            )
+        selected_order = random.choice(orders[:10])
+        selected_order_index = orders.index(selected_order) + 1
+        self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+                                  selected_order)
+        order_title = selected_order.find_element(*locator_order_title).text
+        order_link = selected_order.find_element(*locator_order_link)
+        self.driver.execute_script("arguments[0].click();", order_link)
+        return selected_order_index, order_title
+
+    def f_check_open_details(self, locator, selected_order):
+        locator = (locator[0], f"({locator[1]})[{selected_order}]")
+        element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(locator))
+        h2_text = element.text
+        return h2_text

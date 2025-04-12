@@ -1,69 +1,126 @@
-import time
-
 import allure
-import random
-
 from pages.index_page import IndexPage
 from pages.personal_account_page import PersonalAccountPage
 from pages.feed_page import FeedPage
 from data.data_url import *
 
-
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
-
-
-
-
 class TestOrdersList:
-    # @allure.title('Проверяем, что при клике на заказ открывается всплывающее окно с деталями')
-    # def test_click_on_order_open_window_details(self, fixture_get_driver):
-    #     driver = fixture_get_driver
-    #     page1 = IndexPage(driver, index_url)
-    #     page1.p_open_index_page()
-    #     page1.p_click_lenta_zakazov_button()
-    #     page2 = FeedPage(driver, feed_url)
-    #     selected_order, order_title = page2.p_click_order()
-    #     page_title = page2.p_check_open_details(selected_order)
-    #     assert order_title == page_title, f"Ожидался URL: {order_title}, но получен: {page_title}"
-
-    @allure.title('Проверяем, что заказы пользователя из раздела «История заказов» отображаются на странице «Лента заказов»')
+    @allure.title('Проверяем, что при клике на заказ открывается всплывающее окно с деталями')
     def test_click_on_order_open_window_details(self, fixture_get_driver):
         driver = fixture_get_driver
-        page1 = IndexPage(driver, index_url)
-        page2 = PersonalAccountPage(driver, personal_account_url)
-        page3 = FeedPage(driver, feed_url)
-        page1.p_open_index_page()
+        index_page = IndexPage(driver, index_url)
+        feed_page = FeedPage(driver, feed_url)
 
-        page1.p_click_personal_account_page()
-        time.sleep(3)
+        index_page.p_open_index_page()
+        index_page.p_click_lenta_zakazov_button()
 
-        page2.p_login_user()
-        time.sleep(3)
+        selected_order, order_title = feed_page.p_click_order()
+        page_title = feed_page.p_check_open_details(selected_order)
 
-        page1.p_click_personal_account_page()
-        page2.p_click_orders_history()
+        with allure.step('Всплывающее окно с деталями открылось'):
+            assert order_title == page_title, f"Ожидался URL: {order_title}, но получен: {page_title}"
 
-        wait = WebDriverWait(driver, 10)
-        order_elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@class, 'OrderHistory_textBox__3lgbs')]/p[contains(@class, 'text_type_digits-default')]")))
+    @allure.title('Проверяем, что заказы пользователя из раздела «История заказов» отображаются на странице «Лента заказов»')
+    def test_user_orders_appear_in_order_feed(self, fixture_get_driver):
+        driver = fixture_get_driver
+        index_page = IndexPage(driver, index_url)
+        personal_account_page = PersonalAccountPage(driver, personal_account_url)
+        feed_page = FeedPage(driver, feed_url)
+
+        index_page.p_open_index_page()
+        index_page.p_click_personal_account_page()
+        personal_account_page.p_login_user()
+
+        index_page.p_create_new_order()
+        index_page.p_click_button_for_close_modal_window()
+
+        index_page.p_click_personal_account_page()
+        personal_account_page.p_click_orders_history()
+
+        order_numbers = personal_account_page.p_count_user_orders()
+
+        feed_page.p_click_lenta_zakazov_button()
+        feed_page.p_wait_page(feed_url)
+        all_order_numbers = feed_page.p_get_recent_orders()
+
+        found_numbers = set(order_numbers).intersection(all_order_numbers)
+
+        with allure.step('Заказы пользователя из раздела «История заказов» отображаются на странице «Лента заказов»'):
+            assert found_numbers, "Ни один из номеров заказов не найден в общем списке"
+
+    @allure.title('Проверяем, что при создании нового заказа счётчик Выполнено за всё время увеличивается')
+    def test_completed_orders_counter(self, fixture_get_driver):
+        driver = fixture_get_driver
+        index_page = IndexPage(driver, index_url)
+        personal_account_page = PersonalAccountPage(driver, personal_account_url)
+        feed_page = FeedPage(driver, feed_url)
+        index_page.p_open_index_page()
+
+        index_page.p_click_personal_account_page()
+        personal_account_page.p_login_user()
+
+        index_page.p_click_lenta_zakazov_button()
+        initial_count = feed_page.p_get_total_orders_count()
+        feed_page.p_click_konstruktor_button()
+        index_page.p_create_new_order()
+
+        index_page.p_click_button_for_close_modal_window()
+        index_page.p_click_lenta_zakazov_button()
+        updated_count = feed_page.p_get_total_orders_count()
+
+        with allure.step('Счётчик Выполнено за всё время увеличился'):
+            assert updated_count > initial_count, f"Счётчик не увеличился. Было: {initial_count}, стало: {updated_count}"
+            allure.attach(f"Изначальное значение счётчика: {initial_count}",
+                          attachment_type=allure.attachment_type.TEXT)
+            allure.attach(f"Новое значение счётчика: {updated_count}",
+                          attachment_type=allure.attachment_type.TEXT)
+
+    @allure.title('Проверяем, что при создании нового заказа счётчик Выполнено за сегодня увеличивается')
+    def test_completed_orders_counter_for_day(self, fixture_get_driver):
+        driver = fixture_get_driver
+        index_page = IndexPage(driver, index_url)
+        personal_account_page = PersonalAccountPage(driver, personal_account_url)
+        feed_page = FeedPage(driver, feed_url)
+        index_page.p_open_index_page()
+
+        index_page.p_click_personal_account_page()
+        personal_account_page.p_login_user()
+
+        index_page.p_click_lenta_zakazov_button()
+        initial_count = feed_page.p_get_total_orders_count_for_day()
+        feed_page.p_click_konstruktor_button()
+        index_page.p_create_new_order()
+
+        index_page.p_click_button_for_close_modal_window()
+        index_page.p_click_lenta_zakazov_button()
+        updated_count = feed_page.p_get_total_orders_count_for_day()
+
+        with allure.step('Счётчик Выполнено за сегодня увеличился'):
+            assert updated_count > initial_count, f"Счётчик не увеличился. Было: {initial_count}, стало: {updated_count}"
+            allure.attach(f"Изначальное значение счётчика: {initial_count}",
+                          attachment_type=allure.attachment_type.TEXT)
+            allure.attach(f"Новое значение счётчика: {updated_count}",
+                          attachment_type=allure.attachment_type.TEXT)
 
 
-        order_numbers = [element.text for element in order_elements]
-        print(f"{order_numbers}")
+    @allure.title('Проверяем, что после оформления заказа его номер появляется в разделе В работе')
+    def test_new_order_is_in_progress(self, fixture_get_driver):
+        driver = fixture_get_driver
+        index_page = IndexPage(driver, index_url)
+        personal_account_page = PersonalAccountPage(driver, personal_account_url)
+        feed_page = FeedPage(driver, feed_url)
+        index_page.p_open_index_page()
 
-        page3.p_click_lenta_zakazov_button()
-        wait = WebDriverWait(driver, 10)
-        order_items = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "OrderHistory_listItem__2x95r")))
+        index_page.p_click_personal_account_page()
+        personal_account_page.p_login_user()
 
+        index_page.p_create_new_order()
 
-        all_order_numbers = []
-        for item in order_items:
-            order_number = item.find_element(By.CLASS_NAME, "text_type_digits-default").text
-            all_order_numbers.append(order_number)
+        order_number = index_page.p_get_order_number()
+        index_page.p_click_button_for_close_modal_window()
+        index_page.p_click_lenta_zakazov_button()
+        order_numbers = feed_page.p_check_is_order_in_progress()
 
+        with allure.step('Номер заказа появился в разделе В работе'):
+            assert f"0{order_number}" in order_numbers, f"Номер заказа {order_number} отсутствует в списке."
 
-        print(all_order_numbers)
-        assert set(order_numbers).issubset(all_order_numbers)

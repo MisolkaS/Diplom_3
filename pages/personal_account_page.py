@@ -16,6 +16,7 @@ class PersonalAccountPage(BasePage):
         self.f_wait_and_send_keys(self.locators.PASSWORD_FIELD, registration_data['password'])
         self.f_click_element(self.locators.LOGIN_BUTTON)
 
+
     @allure.title('Заполняем пароль пользователя')
     def p_enter_password(self):
         self.f_wait_and_send_keys(self.locators.PASSWORD_FIELD, registration_data['password'])
@@ -45,13 +46,14 @@ class PersonalAccountPage(BasePage):
     def p_email_recovery(self):
         self.f_wait_and_send_keys(self.locators.EMAIL_FIELD, registration_data['email'])
 
-    @allure.title('Заполняем поле email')
-    def p_password_recovery(self):
-        self.f_wait_and_send_keys(self.locators.PASSWORD_FIELD, registration_data['password'])
+    def p_wait_page(self, url):
+        self.f_wait_page(url)
+    @allure.title('Получаем список своих заказов')
+    def p_count_user_orders(self):
+        order_numbers = self.f_count_user_orders(self.locators.MY_ORDERS)
+        return order_numbers
 
-    @allure.title('Кликаем на кнопку Восстановить')
-    def p_click_button_recovery(self):
-        self.f_click_element(self.locators.RECOVERY_BUTTON)
+
 
 
 

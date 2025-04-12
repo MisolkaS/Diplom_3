@@ -1,3 +1,6 @@
 index_url = "https://stellarburgers.nomoreparties.site"
 feed_url = f"{index_url}/feed"
 personal_account_url = f"{index_url}/login"
+forgot_password_url = f"{index_url}/forgot-password"
+reset_password_url = f"{index_url}/reset-password"
+order_history_url = f"{index_url}/order-history"

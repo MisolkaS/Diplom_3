@@ -2,9 +2,6 @@ import allure
 from locators import IndexPageLocators
 from pages.base_page import BasePage
 
-from selenium.webdriver.common.by import By
-
-
 class IndexPage(BasePage):
     def __init__(self, driver, index_url):
         super().__init__(driver)
@@ -52,7 +49,7 @@ class IndexPage(BasePage):
 
     @allure.step('Кликаем на кнопку закрытия модального окна')
     def p_click_button_for_close_modal_window(self):
-       self.f_click_button_for_close_modal_window(self.locators.MODAL_WINDOW_CLOSE_BUTTON)
+       self.f_click_button_for_close_modal_window(self.locators.MODAL_WINDOW_CLOSE_BUTTON, self.locators.MODAL_WINDOW_LOADING_LAYER)
 
     @allure.step('Проверяем закрытие модального окна')
     def p_check_modal_window_close(self):
@@ -67,10 +64,27 @@ class IndexPage(BasePage):
         initial_counter, updated_counter = self.f_drag_and_drop_ingredient_to_basket(self.locators.BASKET_INGREDIENT, self.locators.BASKET, self.locators.COUNTER)
         return initial_counter, updated_counter
 
+    @allure.step('Переносим ингредиенты в корзину и оформляем заказ')
+    def p_create_new_order(self):
+        self.f_drag_and_drop_ingredients_to_basket_for_order(self.locators.BASKET_INGREDIENT_1, self.locators.BASKET)
+        self.f_drag_and_drop_ingredients_to_basket_for_order(self.locators.BASKET_INGREDIENT_2, self.locators.BASKET)
+        self.f_drag_and_drop_ingredients_to_basket_for_order(self.locators.BASKET_INGREDIENT_3, self.locators.BASKET)
+        self.f_click_element(self.locators.ORDER_BUTTON)
+
     @allure.step('Проверка, что пользователь может сделать заказ')
     def p_check_button_submit_order(self):
         result = self.f_check_button_submit_order(self.locators.ORDER_BUTTON)
         return result
+
+    @allure.step('Получаем номер заказа')
+    def p_get_order_number(self):
+        result = self.f_get_order_number(self.locators.MODAL_WINDOW_ORDER_NUMBER, self.locators.MODAL_WINDOW_LOADING_LAYER)
+        return result
+
+    def p_wait_page(self, url):
+        self.f_wait_page(url)
+
+
 
 
 

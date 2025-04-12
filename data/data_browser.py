@@ -1,4 +1,4 @@
 test_browser = [
-    #"Firefox",
+    "Firefox",
     "Chrome"
 ]
