@@ -1,1 +1,0 @@
-{"uuid": "a14b554f-13d1-4a66-83f4-41cb11d73554", "children": ["693bbff8-c23f-4258-aeef-78e62740b839"], "befores": [{"name": "fixture_get_driver", "status": "passed", "start": 1744473297771, "stop": 1744473301588}], "afters": [{"name": "fixture_get_driver::0", "status": "passed", "start": 1744473303284, "stop": 1744473303920}], "start": 1744473297771, "stop": 1744473303920}

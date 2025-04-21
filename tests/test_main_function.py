@@ -4,6 +4,7 @@ import random
 from pages.index_page import IndexPage
 from pages.personal_account_page import PersonalAccountPage
 from data.data_url import *
+from data.data_user import *
 
 class TestMainFunction:
     @allure.title('Проверяем переход по клику на Конструктор')
@@ -13,7 +14,8 @@ class TestMainFunction:
         index_page.p_open_index_page()
         index_page.p_click_lenta_zakazov_button()
         index_page.p_click_konstruktor_button()
-        current_url = driver.current_url
+        current_url = index_page.p_get_current_url()
+
         with allure.step('Переход по клику на Конструктор'):
             assert index_url in current_url, f"Ожидался URL: {expected_url}, но получен: {current_url}"
 
@@ -24,7 +26,7 @@ class TestMainFunction:
         index_page.p_open_index_page()
         index_page.p_click_lenta_zakazov_button()
 
-        current_url = driver.current_url
+        current_url = index_page.p_get_current_url()
         with allure.step('Переход по клику на Ленту заказов'):
             assert "/feed" in current_url, f"Ожидался URL: {expected_url}, но получен: {current_url}"
 
@@ -72,7 +74,7 @@ class TestMainFunction:
         index_page.p_open_index_page()
 
         index_page.p_click_personal_account_page()
-        personal_account_page.p_login_user()
+        personal_account_page.p_login_user(registration_data['email'], registration_data['password'])
         index_page.p_drag_and_drop_ingredient_to_basket()
         result = index_page.p_check_button_submit_order()
         with allure.step('Зарегистрированный пользователь разместил заказ'):

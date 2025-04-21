@@ -59,16 +59,20 @@ class IndexPage(BasePage):
     def p_wait_page(self, page):
         self.f_wait_page(page)
 
-    @allure.step('Переносим ингредиент в корзину')
+    @allure.step('Переносим ингредиент в корзину и считываем счетчики')
     def p_drag_and_drop_ingredient_to_basket(self):
-        initial_counter, updated_counter = self.f_drag_and_drop_ingredient_to_basket(self.locators.BASKET_INGREDIENT, self.locators.BASKET, self.locators.COUNTER)
-        return initial_counter, updated_counter
+        initial_counter = self.f_wait_any_elements_text(self.locators.COUNTER)
+        initial_counter_value = int(initial_counter) if initial_counter else 0
+        self.f_scroll_to_element(self.locators.BASKET_INGREDIENT)
+        self.f_drag_and_drop_ingredient_to_basket(self.locators.BASKET_INGREDIENT, self.locators.BASKET)
+        updated_counter = self.f_check_counter(self.locators.COUNTER, initial_counter_value)
+        return int(initial_counter), int(updated_counter)
 
     @allure.step('Переносим ингредиенты в корзину и оформляем заказ')
     def p_create_new_order(self):
-        self.f_drag_and_drop_ingredients_to_basket_for_order(self.locators.BASKET_INGREDIENT_1, self.locators.BASKET)
-        self.f_drag_and_drop_ingredients_to_basket_for_order(self.locators.BASKET_INGREDIENT_2, self.locators.BASKET)
-        self.f_drag_and_drop_ingredients_to_basket_for_order(self.locators.BASKET_INGREDIENT_3, self.locators.BASKET)
+        self.f_drag_and_drop_ingredient_to_basket(self.locators.BASKET_INGREDIENT_1, self.locators.BASKET)
+        self.f_drag_and_drop_ingredient_to_basket(self.locators.BASKET_INGREDIENT_2, self.locators.BASKET)
+        self.f_drag_and_drop_ingredient_to_basket(self.locators.BASKET_INGREDIENT_3, self.locators.BASKET)
         self.f_click_element(self.locators.ORDER_BUTTON)
 
     @allure.step('Проверка, что пользователь может сделать заказ')
@@ -81,8 +85,15 @@ class IndexPage(BasePage):
         result = self.f_get_order_number(self.locators.MODAL_WINDOW_ORDER_NUMBER, self.locators.MODAL_WINDOW_LOADING_LAYER)
         return result
 
+    @allure.step('Ждем загрузки страницы')
     def p_wait_page(self, url):
         self.f_wait_page(url)
+
+    @allure.step('Получаем текущий URL')
+    def p_get_current_url(self):
+       current_url = self.f_get_current_url()
+       return current_url
+
 
 
 

@@ -25,8 +25,12 @@ class FeedPage(BasePage):
 
     @allure.step("Получаем список всех заказов")
     def p_get_recent_orders(self):
-        all_order_numbers = self.f_get_recent_orders(self.locators.ORDER_ITEMS, self.locators.ORDER_NUMBER)
-        return all_order_numbers
+        order_elements = self.f_get_recent_orders(self.locators.ORDER_ITEMS)
+        order_numbers = []
+        for item in order_elements:
+            order_number = self.f_get_number_of_recent_order(self.locators.ORDER_NUMBER, item)
+            order_numbers.append(order_number)
+        return order_numbers
 
     @allure.title('Кликаем на кнопку Конструктор')
     def p_click_konstruktor_button(self):
@@ -48,8 +52,6 @@ class FeedPage(BasePage):
         order_numbers = self.f_check_is_order_in_progress(self.locators.ORDERS_IN_PROGRESS)
         return order_numbers
 
+    @allure.step('Ждем загрузки страницы')
     def p_wait_page(self, url):
         self.f_wait_page(url)
-
-
-

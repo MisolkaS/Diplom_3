@@ -3,6 +3,8 @@ from pages.personal_account_page import PersonalAccountPage
 from pages.index_page import IndexPage
 from pages.forgot_password_page import ForgotPasswordPage
 from data.data_url import *
+from data.data_user import *
+
 
 class TestPasswordRecovery:
     @allure.title('Проверяем переход на страницу восстановления пароля по кнопке «Восстановить пароль')
@@ -16,7 +18,7 @@ class TestPasswordRecovery:
         index_page.p_click_personal_account_page()
         personal_account_page.p_click_password_recovery()
 
-        current_url = driver.current_url
+        current_url = index_page.p_get_current_url()
         with allure.step('Проверка перехода на страницу восстановления пароля'):
             assert "/forgot-password" in current_url, f"Ожидался URL: {forgot_password_url}, но получен: {current_url}"
             allure.attach(f"Ожидаемый URL: {forgot_password_url}\nПолученный URL: {current_url}", name="URL details",
@@ -33,11 +35,11 @@ class TestPasswordRecovery:
         index_page.p_click_personal_account_page()
         personal_account_page.p_click_password_recovery()
 
-        forgot_password_page.p_email_recovery()
+        forgot_password_page.p_email_recovery(registration_data['email'])
         forgot_password_page.p_click_button_recovery()
         forgot_password_page.p_wait_page(reset_password_url)
 
-        current_url = driver.current_url
+        current_url = index_page.p_get_current_url()
         with allure.step('Проверка перехода на форму восстановления пароля'):
             assert "/reset-password" in current_url, f"Ожидался URL: {reset_password_url}, но получен: {current_url}"
 
@@ -50,7 +52,7 @@ class TestPasswordRecovery:
         index_page.p_open_index_page()
         index_page.p_click_personal_account_page()
 
-        personal_account_page.p_enter_password()
+        personal_account_page.p_enter_password(registration_data['password'])
         personal_account_page.p_click_eye()
         password_type = personal_account_page.p_get_attribute_type()
         with allure.step('Пароль видим после нажатия на иконку'):

@@ -3,6 +3,7 @@ from pages.index_page import IndexPage
 from pages.personal_account_page import PersonalAccountPage
 from pages.feed_page import FeedPage
 from data.data_url import *
+from data.data_user import *
 
 class TestOrdersList:
     @allure.title('Проверяем, что при клике на заказ открывается всплывающее окно с деталями')
@@ -29,7 +30,7 @@ class TestOrdersList:
 
         index_page.p_open_index_page()
         index_page.p_click_personal_account_page()
-        personal_account_page.p_login_user()
+        personal_account_page.p_login_user(registration_data['email'], registration_data['password'])
 
         index_page.p_create_new_order()
         index_page.p_click_button_for_close_modal_window()
@@ -57,7 +58,7 @@ class TestOrdersList:
         index_page.p_open_index_page()
 
         index_page.p_click_personal_account_page()
-        personal_account_page.p_login_user()
+        personal_account_page.p_login_user(registration_data['email'], registration_data['password'])
 
         index_page.p_click_lenta_zakazov_button()
         initial_count = feed_page.p_get_total_orders_count()
@@ -84,7 +85,7 @@ class TestOrdersList:
         index_page.p_open_index_page()
 
         index_page.p_click_personal_account_page()
-        personal_account_page.p_login_user()
+        personal_account_page.p_login_user(registration_data['email'], registration_data['password'])
 
         index_page.p_click_lenta_zakazov_button()
         initial_count = feed_page.p_get_total_orders_count_for_day()
@@ -112,7 +113,7 @@ class TestOrdersList:
         index_page.p_open_index_page()
 
         index_page.p_click_personal_account_page()
-        personal_account_page.p_login_user()
+        personal_account_page.p_login_user(registration_data['email'], registration_data['password'])
 
         index_page.p_create_new_order()
 
